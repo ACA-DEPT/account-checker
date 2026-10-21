@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account Checker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; overflow: hidden;
+    font-family: "Comic Sans MS", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #ffd6e8, #c9f0ff);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .popup {
+    position: relative; width: min(420px, calc(100% - 32px)); height: 340px;
+    background: #fff; border-radius: 18px; padding: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.25); text-align: center;
+  }
+  h1 { margin: 0 0 6px; font-size: 24px; }
+  p.sub { margin: 0 0 18px; color: #666; font-size: 14px; }
+  input {
+    width: 100%; padding: 12px; font-size: 16px; border-radius: 10px;
+    border: 2px solid #ffb3d1; outline: none; font-family: inherit;
+  }
+  input:focus { border-color: #ff5fa2; }
+  #loginBtn {
+    position: absolute; left: 50%; top: 170px; transform: translateX(-50%);
+    padding: 10px 28px; font-size: 16px; border: 0; border-radius: 10px;
+    background: #4a90e2; color: #fff; cursor: pointer; font-family: inherit;
+    transition: left .15s, top .15s;
+  }
+  #esmeringhoy {
+    position: absolute; right: 12px; bottom: 10px;
+    padding: 4px 8px; font-size: 11px; border: 1px dashed #ccc;
+    background: #fafafa; color: #999; border-radius: 6px; cursor: pointer;
+    font-family: inherit;
+  }
+  #esmeringhoy:hover { color: #ff5fa2; border-color: #ff5fa2; }
+  #taunt { position: absolute; left: 0; right: 0; bottom: 48px; color: #e0457b; font-size: 14px; min-height: 18px; }
+  .result { display: none; }
+  .card {
+    background: #f6f9ff; border-radius: 12px; padding: 14px; margin-top: 10px;
+    text-align: left; font-size: 16px;
+  }
+  .card b { display: inline-block; width: 95px; }
+  .card a { color: #4a90e2; word-break: break-all; font-size: 13px; }
+  .again { margin-top: 14px; padding: 8px 18px; border: 0; border-radius: 8px; background: #ff5fa2; color: #fff; cursor: pointer; font-family: inherit; }
+  .shake { animation: shake .4s; }
+  @keyframes shake { 25%{transform:translateX(-8px)} 50%{transform:translateX(8px)} 75%{transform:translateX(-4px)} }
+</style>
+</head>
+<body>
+<div class="overlay">
+  <div class="popup" id="popup">
+    <div id="formView">
+      <h1>👋 Who are you?</h1>
+      <p class="sub">Type your name to check your account</p>
+      <input id="name" placeholder="Type your name..." autocomplete="off">
+      <button id="loginBtn">Login</button>
+      <div id="taunt"></div>
+      <button id="esmeringhoy">esmeringhoy</button>
+    </div>
+    <div id="resultView" class="result">
+      <h1 id="hello"></h1>
+      <div class="card" id="card"></div>
+      <button class="again" onclick="reset()">Check another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SITE = "https://acad-cbli.onrender.com/";
+  const ACCOUNTS = {
+    admin: "acd_admin", ericka: "acd_ericka", mary: "acd_mary", jear: "acd_jear",
+    paolo: "acd_paolo", jasper: "acd_jasper", vin: "acd_vinn", kristan: "acd_kristan",
+    manolette: "acd_manolette", mahrvhin: "acd_mahrvhin", ejt: "acd_ejtan", princess: "acd_princess"
+  };
+  const TAUNTS = ["Nope! 😜", "Too slow! 🐢", "Catch me if you can!", "Hehehe 🤭",
+    "Not today!", "Try harder 😂", "Wrong button, bestie", "I'm shy 🙈"];
+
+  const popup = document.getElementById("popup");
+  const btn = document.getElementById("loginBtn");
+  const taunt = document.getElementById("taunt");
+  const nameInput = document.getElementById("name");
+
+  function runAway() {
+    const pw = popup.clientWidth, ph = popup.clientHeight;
+    const bw = btn.offsetWidth, bh = btn.offsetHeight;
+    btn.style.transform = "none";
+    btn.style.left = Math.random() * (pw - bw - 20) + 10 + "px";
+    btn.style.top = 130 + Math.random() * (ph - bh - 200) + "px";
+    taunt.textContent = TAUNTS[Math.floor(Math.random() * TAUNTS.length)];
+  }
+
+  popup.addEventListener("mousemove", e => {
+    const r = btn.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    if (Math.hypot(dx, dy) < 80) runAway();
+  });
+  btn.addEventListener("touchstart", e => { e.preventDefault(); runAway(); });
+  btn.addEventListener("click", runAway);
+
+  function commence() {
+    const name = nameInput.value.trim().toLowerCase();
+    if (!name) {
+      taunt.textContent = "Type your name first! 🙄";
+      popup.classList.remove("shake"); void popup.offsetWidth; popup.classList.add("shake");
+      return;
+    }
+    const pass = ACCOUNTS[name];
+    document.getElementById("formView").style.display = "none";
+    document.getElementById("resultView").style.display = "block";
+    const disp = name.charAt(0).toUpperCase() + name.slice(1);
+    if (pass) {
+      document.getElementById("hello").textContent = "🎉 Hi " + disp + "!";
+      document.getElementById("card").innerHTML =
+        "<div><b>Username:</b> " + name + "</div>" +
+        "<div><b>Password:</b> " + pass + "</div>" +
+        '<div style="margin-top:8px"><a href="' + SITE + '" target="_blank">' + SITE + "</a></div>";
+    } else {
+      document.getElementById("hello").textContent = "🤨 Who are you?";
+      document.getElementById("card").textContent = "No account found for \"" + disp + "\". Are you sure you work here? 😂";
+    }
+  }
+
+  document.getElementById("esmeringhoy").addEventListener("click", commence);
+  nameInput.addEventListener("keydown", e => { if (e.key === "Enter") { runAway(); } });
+
+  function reset() {
+    nameInput.value = ""; taunt.textContent = "";
+    btn.style.left = "50%"; btn.style.top = "170px"; btn.style.transform = "translateX(-50%)";
+    document.getElementById("formView").style.display = "block";
+    document.getElementById("resultView").style.display = "none";
+    nameInput.focus();
+  }
+  nameInput.focus();
+</script>
+</body>
+</html>
